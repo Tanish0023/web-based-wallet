@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import Navbar from "./_components/navbar";
+import MnemonicPopUp from "./_components/mnemonic-popup";
 
 export default function Home() {
   return (
-    <div>
-      hello
-    </div>
+    <>
+      <Navbar /> 
+      <MnemonicPopUp mnemonic={[]}/> 
+    </>
   );
 }
