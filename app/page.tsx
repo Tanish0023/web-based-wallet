@@ -1,11 +1,11 @@
+import BlockchainSelect from "./_components/blockchain-select";
 import Navbar from "./_components/navbar";
-import MnemonicPopUp from "./_components/mnemonic-popup";
 
 export default function Home() {
   return (
     <>
       <Navbar /> 
-      <MnemonicPopUp mnemonic={[]}/> 
+      <BlockchainSelect />
     </>
   );
 }
