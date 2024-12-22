@@ -22,7 +22,7 @@ const DisKeyPairs = ({
 
 
     return ( 
-        <div className="w-full p-2 sm:p-4 px-4 sm:px-8 bg-gray-400 rounded-2xl">
+        <div className="w-full p-2 sm:p-4 px-4 sm:px-8 bg-zinc-900 rounded-2xl">
                 <div className="text-xl">
                     <div className="font-semibold">
                         Public Key

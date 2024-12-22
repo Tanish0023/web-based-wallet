@@ -1,6 +1,6 @@
 "use client"
 
-import { generateSeedPhase } from "@/actions/generate_mnemonic";
+import { checkMnemonic, generateSeedphrase } from "@/actions/generate_mnemonic";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/dialog"  
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils";
-import { EyeOff, PlusCircle } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { Eye, EyeOff, PlusCircle } from "lucide-react";
+import { useEffect, useState, useTransition, useRef } from "react";
 import {toast} from "react-toastify"
 import KeyPairs from "./keyPairs";
 import { usePathname } from "next/navigation";
@@ -30,13 +30,14 @@ const MnemonicPopUp = () => {
     const [mnemonic, setMnemonic] = useState("");
     const [isPending, startTransition] = useTransition()
     const [hidden, setIsHidden] = useState(true);
+    const [hiddenSeedPhase, setIsHiddenSeedPhase] = useState(true);
     const [index,setIndex] = useState(0);
     const [wallet, setWallet]:any = useState([])
 
     const path = usePathname();        
-    const copyText = async () => {
+    const copyText = async (text:string) => {
         try {
-            await navigator.clipboard.writeText(mnemonic);
+            await navigator.clipboard.writeText(text);
             toast.success("Text copied successfully.")
           } catch (err) {
             toast.error("Failed to copy text")
@@ -45,8 +46,11 @@ const MnemonicPopUp = () => {
 
     const onClick = () => {
       startTransition(async () => {
-        const result = await generateSeedPhase()
+        const result = await generateSeedphrase()
         setMnemonic(result);
+        console.log(inputEle.asReadOnly);
+        
+        inputEle.current.value = result;
       })
 
       setIsUsed(true)
@@ -96,8 +100,6 @@ const MnemonicPopUp = () => {
 
     }
 
-    
-    
     const fetchWallet = async () => {
       const walletResult = await getKeyPairs(path);
       setWallet(walletResult);
@@ -107,38 +109,87 @@ const MnemonicPopUp = () => {
     useEffect(() => {
       fetchWallet();
     }, [index]);
+    
+    const inputEle:any = useRef<HTMLInputElement>(null);
 
-    const handleOnSubmitInput = () => {
+    const handleOnSubmitInput = (e:React.FormEvent) => {
+      e.preventDefault();
+      
+      startTransition(() => {
+        checkMnemonic(inputEle.current.value)
+          .then(() => toast.success("Your seed phase was correct, you can now create wallets"))
+          .catch(() => toast.error("Please enter a valid seed phase"))
+      })
       
     }
 
+    const showOrHideSeedPhase = () => {
+      setIsHiddenSeedPhase(!hiddenSeedPhase)
+      console.log(inputEle.current.type);
+      
+      inputEle.current.type = hiddenSeedPhase ? "password" : "text";
+      console.log(inputEle.current.type);
+      
+
+    }
+
+    const Icon = ({className,onClick}:{className: string;onClick: () => void}) => (
+      hiddenSeedPhase ? <Eye className={className} onClick={onClick}/> : <EyeOff className={className} onClick={onClick}/>
+    )
+
     return (
-        <div className="py-5 px-10 flex flex-col gap-6">
+        <div className="relative py-5 px-5 sm:px-10 flex flex-col gap-6">
           <div>
             <Dialog>
-              <DialogTrigger asChild disabled={isUsed} className="flex flex-col lg:flex-row items-center justify-center w-full gap-4 sm:gap-x-5">
-                <form>
-                  <Input 
-                    placeholder="Create new seed phase or enter an existing one.."
-                  />
-                  <Button className="text-white w-full lg:flex-1" size={"sm"} onClick={onClick} disabled={isPending || isUsed}><PlusCircle /> Create seed phase</Button>
+              <div className="flex flex-col gap-5">
+                <form 
+                  className="flex flex-col sm:flex-row items-center justify-center w-full gap-4 sm:gap-x-5"
+                  onSubmit={handleOnSubmitInput}
+                >
+                  <div className="relative w-full">
+                    <Input 
+                      placeholder="Create new seed phrase or enter an existing one.."
+                      type="text"
+                      className="relative pr-10"
+                      ref={inputEle}
+                      disabled={isUsed}
+                    />
+                    <Icon 
+                      className="absolute right-0 top-0 m-2"
+                      onClick={showOrHideSeedPhase}
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    disabled={isUsed}
+                    className="w-full sm:max-w-sm"
+                  >Enter seed phrase</Button>
                 </form>
-              </DialogTrigger>
+
+                <DialogTrigger 
+                  asChild 
+                  disabled={isUsed} 
+                >
+                  <Button className="w-full" size={"sm"} onClick={onClick} disabled={isPending || isUsed}><PlusCircle /> Create seed phrase</Button>
+                </DialogTrigger>
+
+              </div>
+
               {isPending && (
-                <div className="absolute h-full w-full flex items-center justify-center">
+                <div className="absolute h-full w-auto flex items-center justify-center">
                   Loading....
                 </div>
               )}
               {!isPending && (
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Your seed phase is</DialogTitle>
+                    <DialogTitle>Your seed phrase is</DialogTitle>
                     <DialogDescription>
                       DO NOT SHARE THIS WITH ANYONE!!
                     </DialogDescription>
                   </DialogHeader>
                   <div className="relative grid grid-cols-2 xl:grid-cols-3 gap-2">
-                      <div className="absolute h-full w-full z-10 cursor-pointer"  onClick={copyText}></div>
+                      <div className="absolute h-full w-full z-10 cursor-pointer"  onClick={() => copyText(mnemonic)}></div>
                       
                       {hidden && (
                         <div 
@@ -157,7 +208,7 @@ const MnemonicPopUp = () => {
                   </div>
                   <DialogFooter>
                       <div className="text-sm text-red-500">
-                          *In case of emergency you can use this to get back all your accounts related to this seed phase
+                          *In case of emergency you can use this to get back all your accounts related to this seed phrase
                       </div>
                   </DialogFooter>
                 </DialogContent>
