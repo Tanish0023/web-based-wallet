@@ -11,7 +11,7 @@ const ChainNameLayout = async ({
     params,
     children
 }:ChainNameLayoutProps) => {
-    const {chainName} = await params;
+    const {chainName} = params;
     const chainNameUpper = chainName.toUpperCase();
 
     return ( 

@@ -47,9 +47,7 @@ const MnemonicPopUp = () => {
     const onClick = () => {
       startTransition(async () => {
         const result = await generateSeedphrase()
-        setMnemonic(result);
-        console.log(inputEle.asReadOnly);
-        
+        setMnemonic(result);        
         inputEle.current.value = result;
       })
 
@@ -125,10 +123,8 @@ const MnemonicPopUp = () => {
 
     const showOrHideSeedPhase = () => {
       setIsHiddenSeedPhase(!hiddenSeedPhase)
-      console.log(inputEle.current.type);
       
       inputEle.current.type = hiddenSeedPhase ? "password" : "text";
-      console.log(inputEle.current.type);
       
 
     }
@@ -152,7 +148,7 @@ const MnemonicPopUp = () => {
                       type="text"
                       className="relative pr-10"
                       ref={inputEle}
-                      disabled={isUsed}
+                      disabled={isUsed || true}
                     />
                     <Icon 
                       className="absolute right-0 top-0 m-2"
