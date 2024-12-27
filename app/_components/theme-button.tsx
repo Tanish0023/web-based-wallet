@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 
 const ThemeButton = () => {
     const { setTheme, theme } = useTheme()
-    const [themeButton, setThemeButton] = useState("dark");
+    const [themeButton, setThemeButton] = useState(theme);
     // setThemeButton(theme || "dark")
 
     const changeTheme = () => {
